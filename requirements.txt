@@ -1,2 +1,3 @@
-python-telegram-bot==20.3
-fuzzywuzzy[speedup]
+python-telegram-bot
+fuzzywuzzy
+python-Levenshtein
