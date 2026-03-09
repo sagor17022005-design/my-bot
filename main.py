@@ -1,59 +1,35 @@
 import os
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
-from fuzzywuzzy import process
 
-# Bot token from environment variable
+# Variable setup
 TOKEN = os.environ.get("BOT_TOKEN")
+CHANNEL_USERNAME = "@shibir_online_library" # আপনার চ্যানেলের ইউজারনেম
 
-# Function to load books from txt file
-def load_books():
-    book_dict = {}
-    try:
-        with open("books.txt", "r", encoding="utf-8") as f:
-            for line in f:
-                if "|" in line:
-                    name, link = line.strip().split("|")
-                    book_dict[name] = link
-    except FileNotFoundError:
-        print("Error: books.txt file not found!")
-    return book_dict
-
-# /start command
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "আসসালামু আলাইকুম।\n"
-        "বইয়ের নাম লিখে সার্চ করুন। আমি আপনাকে PDF লিঙ্ক খুঁজে দেব।\n\n"
-        "যেমন: কর্মী সিলেবাস"
-    )
+    await update.message.reply_text("আসসালামু আলাইকুম।\nবইয়ের নাম লিখে সার্চ দিন, আমি চ্যানেল থেকে খুঁজে দেব।")
 
-# Search function
-async def search_book(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.message.text.strip()
-    if not query:
+async def auto_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.message.text.strip().lower()
+    if len(query) < 3:
+        await update.message.reply_text("অনুগ্রহ করে অন্তত ৩ অক্ষরের নাম লিখুন।")
         return
 
-    # Reload books every time to get new updates from txt file
-    all_books = load_books()
+    # এখানে আমরা সরাসরি চ্যানেলের পাবলিক লিঙ্ক ফরম্যাট ব্যবহার করছি
+    # ইউজারকে জানানো হচ্ছে তারা যেন চ্যানেলে সার্চ করে অথবা বট লিঙ্ক জেনারেট করছে
+    search_url = f"https://t.me/s/{CHANNEL_USERNAME[1:]}?q={query}"
     
-    # Fuzzy search logic
-    matches = process.extract(query, all_books.keys(), limit=5)
-    results = [m for m in matches if m[1] >= 50] # Similarity score 50%
-
-    if results:
-        for name, score in results:
-            link = all_books[name]
-            kb = InlineKeyboardMarkup([[InlineKeyboardButton("📖 বইপিডিএফ দেখুন", url=link)]])
-            await update.message.reply_text(f"📚 {name}", reply_markup=kb)
-    else:
-        await update.message.reply_text("দুঃখিত, এই নামে কোনো বই খুঁজে পাওয়া যায়নি। সঠিক নাম লিখে চেষ্টা করুন।")
+    kb = InlineKeyboardMarkup([
+        [InlineKeyboardButton("🔍 চ্যানেলে ফলাফল দেখুন", url=search_url)]
+    ])
+    
+    await update.message.reply_text(
+        f"আপনার খোঁজা '{query}' সম্পর্কিত বইগুলো চ্যানেলে দেখতে নিচের বাটনে ক্লিক করুন:",
+        reply_markup=kb
+    )
 
 if __name__ == "__main__":
-    if not TOKEN:
-        print("Error: BOT_TOKEN not found in environment variables!")
-    else:
-        app = ApplicationBuilder().token(TOKEN).build()
-        app.add_handler(CommandHandler("start", start))
-        app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, search_book))
-        print("Bot is running with txt database...")
-        app.run_polling()
+    app = ApplicationBuilder().token(TOKEN).build()
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, auto_search))
+    app.run_polling()
