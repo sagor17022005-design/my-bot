@@ -28,10 +28,10 @@ async def handle_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("⚠️ দয়া করে বইয়ের সঠিক এবং পূর্ণ নাম লিখুন।")
         return
 
-    # এই লিঙ্কটি টেলিগ্রাম অ্যাপকে কমান্ড দেবে সরাসরি ওই চ্যানেলে সার্চ রেজাল্ট ফিল্টার করতে
+    # ব্রাউজার ভিউ সার্চ লিঙ্ক (যা আগে কাজ করেছিল)
     encoded_query = urllib.parse.quote(query)
-    # এখানে 'q' প্যারামিটারটি টেলিগ্রামের ইন-অ্যাপ সার্চ ট্রিগার করবে
-    search_url = f"https://t.me/shibir_online_library?q={encoded_query}"
+    # এখানে /s/ ফরম্যাটটি ব্যবহার করা হয়েছে যা সরাসরি ব্রাউজারে রেজাল্ট দেখাবে
+    search_url = f"https://t.me/s/shibir_online_library?q={encoded_query}"
     
     keyboard = [
         [InlineKeyboardButton("📚 বইটি এখানে ডাউনলোড করুন", url=search_url)],
@@ -39,6 +39,7 @@ async def handle_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("📢 আমাদের লাইব্রেরি চ্যানেল", url=CHANNEL_LINK)]
     ]
     
+    # আপনার দেওয়া নির্দিষ্ট মেসেজ ফরম্যাট
     response_text = (
         f"🔎 '{query}' বই এর জন্য নিচের বাটনে ক্লিক করুন।\n\n"
         "যদি বইটি খুঁজে না পান তাহলে আবার সঠিক নাম লিখে পুনরায় চেষ্টা করুন অথবা অ্যাডমিন এর সাথে যোগাযোগ করুন। 📝"
@@ -51,10 +52,10 @@ async def handle_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 if __name__ == "__main__":
     if not TOKEN:
-        print("Error: BOT_TOKEN is missing!")
+        print("Error: BOT_TOKEN variable is missing!")
     else:
         app = ApplicationBuilder().token(TOKEN).build()
         app.add_handler(CommandHandler("start", start))
         app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_search))
-        print("Bot is running perfectly with Deep Linking...")
+        print("Bot is running with Web Search Link...")
         app.run_polling()
