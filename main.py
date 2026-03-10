@@ -37,36 +37,39 @@ async def handle_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # কি-ওয়ার্ড এনকোড করা
     encoded_query = urllib.parse.quote(query)
     
-    # এটি সরাসরি টেলিগ্রাম অ্যাপের ইন্টারনাল সার্চকে কমান্ড দেবে (এখানে /s/ নেই)
-    # ফলে অ্যাপ সরাসরি ওই কি-ওয়ার্ড দিয়ে আপনার চ্যানেলে ফিল্টার করবে
-    search_url = f"https://t.me/{CHANNEL_USERNAME}?q={encoded_query}"
+    # আপনার চাওয়া ব্রাউজিং লিঙ্ক (Web View)
+    web_search_url = f"https://t.me/s/{CHANNEL_USERNAME}?q={encoded_query}"
+    
+    # বিকল্প শক্তিশালী সার্চ লিঙ্ক (যদি ব্রাউজারে কাজ না করে, এটি সরাসরি অ্যাপে খুঁজবে)
+    app_search_url = f"tg://search?text=@{CHANNEL_USERNAME}%20{encoded_query}"
     
     # বাটন মেনু
     keyboard = [
-        [InlineKeyboardButton(f"📚 '{query}' বইটি এখানে ডাউনলোড করুন", url=search_url)],
+        [InlineKeyboardButton(f"🌐 ব্রাউজারে ফলাফল দেখুন", url=web_search_url)],
+        [InlineKeyboardButton(f"📲 সরাসরি অ্যাপে খুঁজুন", url=app_search_url)],
         [InlineKeyboardButton("👨‍💻 অ্যাডমিন সাপোর্ট (যোগাযোগ)", url=ADMIN_SUPPORT_LINK)],
         [InlineKeyboardButton("📢 আমাদের লাইব্রেরি চ্যানেল", url=MY_CHANNEL_LINK)]
     ]
     
-    # আপনার দেওয়া হুবহু টেক্সট ফরম্যাট
     response_text = (
         f"🔎 '{query}' বই এর জন্য নিচের বাটনে ক্লিক করুন।\n\n"
         "যদি বইটি খুঁজে না পান তাহলে আবার সঠিক নাম লিখে পুনরায় চেষ্টা করুন অথবা অ্যাডমিন এর সাথে যোগাযোগ করুন। 📝"
     )
     
-    await update.message.reply_text(
-        response_text,
-        reply_markup=InlineKeyboardMarkup(keyboard)
-    )
+    try:
+        await update.message.reply_text(
+            response_text,
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
+    except Exception as e:
+        print(f"Error sending message: {e}")
 
 if __name__ == "__main__":
     if not TOKEN:
         print("Error: BOT_TOKEN is missing!")
     else:
         app = ApplicationBuilder().token(TOKEN).build()
-        
         app.add_handler(CommandHandler("start", start))
         app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_search))
-        
-        print("Bot is running with Direct App Search...")
+        print("Bot is running with Multi-Search Options...")
         app.run_polling()
