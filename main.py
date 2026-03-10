@@ -3,22 +3,28 @@ import urllib.parse
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
 
-# --- কনফিগারেশন ---
+# এনভায়রনমেন্ট ভেরিয়েবল থেকে টোকেন সংগ্রহ
 TOKEN = os.environ.get("BOT_TOKEN")
+
+# আপনার নিজস্ব চ্যানেল এবং অ্যাডমিন লিঙ্ক
+MY_CHANNEL_LINK = "https://t.me/shibir_online_library"
 ADMIN_SUPPORT_LINK = "http://t.me/shibir_online_library?direct"
-CHANNEL_LINK = "https://t.me/shibir_online_library"
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user = update.effective_user
+    user_name = update.effective_user.first_name
+    
+    # স্টার্ট মেনু বাটন (চ্যানেল জয়েন ও অ্যাডমিন)
+    keyboard = [
+        [InlineKeyboardButton("📢 আমাদের চ্যানেলে জয়েন করুন", url=MY_CHANNEL_LINK)],
+        [InlineKeyboardButton("👨‍💻 অ্যাডমিন সাপোর্ট (যোগাযোগ)", url=ADMIN_SUPPORT_LINK)]
+    ]
+    
     welcome_text = (
-        f"আসসালামু আলাইকুম {user.first_name}! 👋\n\n"
+        f"আসসালামু আলাইকুম {user_name}! 👋\n\n"
         "📖 আমি Shibir Online Library Bot বলছি।\n\n"
         "বাংলাদেশ ইসলামী ছাত্রশিবিরের যেকোনো বইয়ের নাম লিখে আমাকে মেসেজ দিন, আমি বইটি আপনাকে খুঁজে দেব। 🔍"
     )
-    keyboard = [
-        [InlineKeyboardButton("📢 আমাদের লাইব্রেরি চ্যানেল", url=CHANNEL_LINK)],
-        [InlineKeyboardButton("👨‍💻 অ্যাডমিন সাপোর্ট (যোগাযোগ)", url=ADMIN_SUPPORT_LINK)]
-    ]
+    
     await update.message.reply_text(welcome_text, reply_markup=InlineKeyboardMarkup(keyboard))
 
 async def handle_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -28,15 +34,15 @@ async def handle_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("⚠️ দয়া করে বইয়ের সঠিক এবং পূর্ণ নাম লিখুন।")
         return
 
-    # ব্রাউজার ভিউ সার্চ লিঙ্ক (যা আগে কাজ করেছিল)
+    # আপনার চ্যানেলের জন্য ব্রাউজার ভিউ সার্চ লিঙ্ক
     encoded_query = urllib.parse.quote(query)
-    # এখানে /s/ ফরম্যাটটি ব্যবহার করা হয়েছে যা সরাসরি ব্রাউজারে রেজাল্ট দেখাবে
     search_url = f"https://t.me/s/shibir_online_library?q={encoded_query}"
     
+    # বাটন মেনু সেটআপ
     keyboard = [
-        [InlineKeyboardButton("📚 বইটি এখানে ডাউনলোড করুন", url=search_url)],
-        [InlineKeyboardButton("👨‍💻 অ্যাডমিন সাপোর্ট (যোগাযোগ)", url=ADMIN_SUPPORT_LINK)],
-        [InlineKeyboardButton("📢 আমাদের লাইব্রেরি চ্যানেল", url=CHANNEL_LINK)]
+        [InlineKeyboardButton(f"📚 '{query}' বইটি এখানে ডাউনলোড করুন", url=search_url)],
+        [InlineKeyboardButton("📢 আমাদের লাইব্রেরি চ্যানেল", url=MY_CHANNEL_LINK)],
+        [InlineKeyboardButton("👨‍💻 অ্যাডমিন সাপোর্ট (যোগাযোগ)", url=ADMIN_SUPPORT_LINK)]
     ]
     
     # আপনার দেওয়া নির্দিষ্ট মেসেজ ফরম্যাট
@@ -52,10 +58,12 @@ async def handle_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 if __name__ == "__main__":
     if not TOKEN:
-        print("Error: BOT_TOKEN variable is missing!")
+        print("Error: BOT_TOKEN is missing!")
     else:
         app = ApplicationBuilder().token(TOKEN).build()
+        
         app.add_handler(CommandHandler("start", start))
         app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_search))
-        print("Bot is running with Web Search Link...")
+        
+        print("Bot is running perfectly for your channel only...")
         app.run_polling()
