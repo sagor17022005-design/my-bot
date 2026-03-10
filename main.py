@@ -6,14 +6,15 @@ from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, Con
 # এনভায়রনমেন্ট ভেরিয়েবল থেকে টোকেন সংগ্রহ
 TOKEN = os.environ.get("BOT_TOKEN")
 
-# আপনার নিজস্ব চ্যানেল এবং অ্যাডমিন লিঙ্ক
+# আপনার চ্যানেল এবং অ্যাডমিন লিঙ্ক
 MY_CHANNEL_LINK = "https://t.me/shibir_online_library"
 ADMIN_SUPPORT_LINK = "http://t.me/shibir_online_library?direct"
+CHANNEL_USERNAME = "shibir_online_library"
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_name = update.effective_user.first_name
     
-    # স্টার্ট মেনু বাটন (চ্যানেল জয়েন ও অ্যাডমিন)
+    # মেইন মেনু বাটন
     keyboard = [
         [InlineKeyboardButton("📢 আমাদের চ্যানেলে জয়েন করুন", url=MY_CHANNEL_LINK)],
         [InlineKeyboardButton("👨‍💻 অ্যাডমিন সাপোর্ট (যোগাযোগ)", url=ADMIN_SUPPORT_LINK)]
@@ -34,9 +35,10 @@ async def handle_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("⚠️ দয়া করে বইয়ের সঠিক এবং পূর্ণ নাম লিখুন।")
         return
 
-    # আপনার চ্যানেলের জন্য ব্রাউজার ভিউ সার্চ লিঙ্ক
+    # কি-ওয়ার্ড সার্চ লিঙ্ক: এটি সরাসরি টেলিগ্রাম অ্যাপের সার্চ ফাংশন ওপেন করবে
     encoded_query = urllib.parse.quote(query)
-    search_url = f"https://t.me/s/shibir_online_library?q={encoded_query}"
+    # এই ফরম্যাটটি সরাসরি ইন-অ্যাপ সার্চ রেজাল্ট দেখায় (সবচেয়ে কার্যকর)
+    search_url = f"https://t.me/{CHANNEL_USERNAME}?q={encoded_query}"
     
     # বাটন মেনু সেটআপ
     keyboard = [
@@ -58,13 +60,12 @@ async def handle_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 if __name__ == "__main__":
     if not TOKEN:
-        print("Error: BOT_TOKEN is missing!")
+        print("Error: BOT_TOKEN variable is missing!")
     else:
         app = ApplicationBuilder().token(TOKEN).build()
         
         app.add_handler(CommandHandler("start", start))
         app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_search))
         
-        print("Bot is running perfectly for your channel only...")
+        print("Bot is running with Keyword Deep Search...")
         app.run_polling()
-
