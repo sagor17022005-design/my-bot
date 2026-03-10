@@ -5,37 +5,41 @@ from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, Con
 
 # --- কনফিগারেশন ---
 TOKEN = os.environ.get("BOT_TOKEN")
-ADMIN_USERNAME = "@Sagor_Islam_id" # আপনার ইউজারনেম
+# আপনার দেওয়া নতুন ডিরেক্ট লিঙ্ক
+ADMIN_SUPPORT_LINK = "http://t.me/shibir_online_library?direct"
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
-    await update.message.reply_text(
-        f"আসসালামু আলাইকুম {user.first_name}!\n"
-        "আমি **Shibir Online Library Bot**।\n\n"
-        "যেকোনো বইয়ের নাম লিখে আমাকে মেসেজ দিন, আমি আমাদের লাইব্রেরি থেকে সরাসরি লিঙ্ক খুঁজে দেব।"
+    # আপনার দেওয়া নির্দিষ্ট টেক্সট ইমোজি সহ
+    welcome_text = (
+        f"আসসালামু আলাইকুম {user.first_name}! 👋\n\n"
+        "📖 আমি Shibir Online Library Bot বলছি।\n\n"
+        "বাংলাদেশ ইসলামী ছাত্রশিবিরের যেকোনো বইয়ের নাম লিখে আমাকে মেসেজ দিন, আমি বইটি আপনাকে খুঁজে দেব। 🔍"
     )
+    await update.message.reply_text(welcome_text)
 
 async def handle_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text.strip()
 
     if len(text) < 2:
-        await update.message.reply_text("বইয়ের নামটি অন্তত ২ অক্ষরে লিখুন।")
+        await update.message.reply_text("⚠️ দয়া করে বইয়ের সঠিক এবং পূর্ণ নাম লিখুন।")
         return
 
-    # সার্চ ইউআরএল তৈরি (আপনার চ্যানেল থেকে সরাসরি রেজাল্ট দেখাবে)
+    # আপনার চ্যানেলের ইন-চ্যানেল সার্চ ইউআরএল
     encoded_query = urllib.parse.quote(text)
     search_url = f"https://t.me/s/shibir_online_library?q={encoded_query}"
     
-    # বাটন সেটআপ (সার্চ লিঙ্ক + অ্যাডমিন সাপোর্ট)
+    # বাটন সেটআপ
     keyboard = [
-        [InlineKeyboardButton("📖 বইটি এখানে ডাউনলোড করুন", url=search_url)],
-        [InlineKeyboardButton("👨‍💻 অ্যাডমিন সাপোর্ট (যোগাযোগ)", url=f"https://t.me/{ADMIN_USERNAME[1:]}")]
+        [InlineKeyboardButton("📚 বইটি এখানে ডাউনলোড করুন", url=search_url)],
+        [InlineKeyboardButton("👨‍💻 অ্যাডমিন সাপোর্ট (যোগাযোগ)", url=ADMIN_SUPPORT_LINK)]
     ]
     
+    # রিপ্লাই মেসেজ
     await update.message.reply_text(
-        f"🔎 **'{text}'** এর জন্য নিচের বাটনে ক্লিক করুন। বই না পেলে সরাসরি অ্যাডমিনকে জানাতে পারেন।",
-        reply_markup=InlineKeyboardMarkup(keyboard),
-        parse_mode="Markdown"
+        f"🔎 '{text}' এর জন্য নিচের বাটনে ক্লিক করুন।\n\n"
+        "যদি কাঙ্ক্ষিত বইটি না পান, তবে সঠিক নাম লিখে পুনরায় চেষ্টা করুন অথবা অ্যাডমিনকে জানান। 📝",
+        reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
 if __name__ == "__main__":
@@ -44,5 +48,5 @@ if __name__ == "__main__":
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_search))
     
-    print("Bot is live! No join required...")
+    print("Bot is running with New Admin Link and Emojis...")
     app.run_polling()
