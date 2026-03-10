@@ -27,21 +27,21 @@ async def handle_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("⚠️ দয়া করে বইয়ের সঠিক এবং পূর্ণ নাম লিখুন।")
         return
 
-    # চ্যানেলের ওয়েব পেজ থেকে চেক করা হচ্ছে কোনো রেজাল্ট আছে কি না
+    # সার্চ রেজাল্ট চেক করা হচ্ছে
     search_url_web = f"https://t.me/s/{CHANNEL_USERNAME}?q={urllib.parse.quote(query)}"
     
     try:
-        response = requests.get(search_url_web)
-        # যদি 'No messages found' বা এরর উইজেট থাকে তবে রেজাল্ট নেই
+        response = requests.get(search_url_web, timeout=10)
+        # রেজাল্ট না থাকলে টেলিগ্রাম 'No messages found' দেখায়
         if "No messages found" in response.text or "tgme_widget_message_error" in response.text:
             found = False
         else:
             found = True
     except:
-        found = True # টেকনিক্যাল এরর হলে সেফটি হিসেবে রেজাল্ট দেখাবে
+        found = True # এরর হলে আমরা ধরে নেব রেজাল্ট থাকতে পারে
 
     if found:
-        # বই খুঁজে পাওয়া গেলে শুধুমাত্র ডাউনলোডের বাটন আসবে
+        # বই পাওয়া গেলে
         encoded_query = urllib.parse.quote(query)
         search_url = f"https://t.me/s/{CHANNEL_USERNAME}?q={encoded_query}"
         
@@ -51,13 +51,13 @@ async def handle_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ]
         
         await update.message.reply_text(
-            f"🔎 '{query}' বই এর জন্য নিচের বাটনে ক্লিক করুন।\n\n"
+            f"🔎 '{query}' এর জন্য নিচের বাটনে ক্লিক করুন।\n\n"
             f"📢 আমাদের বই এর চ্যানেলে যুক্ত থাকুন: {CHANNEL_LINK}",
             reply_markup=InlineKeyboardMarkup(keyboard),
             disable_web_page_preview=True
         )
     else:
-        # বই খুঁজে পাওয়া না গেলে আপনার দেওয়া নির্দিষ্ট মেসেজটি আসবে
+        # বই না পাওয়া গেলে আপনার দেওয়া নির্দিষ্ট মেসেজ
         error_text = (
             "❌ বইটি খুঁজে পাওয়া যাচ্ছে না।\n\n"
             "দয়া করে বই এর সঠিক নাম লিখুন অথবা অ্যাডমিন এর সাথে সরাসরি যোগাযোগ করুন। 📝\n\n"
@@ -72,7 +72,11 @@ async def handle_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 if __name__ == "__main__":
-    app = ApplicationBuilder().token(TOKEN).build()
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_search))
-    app.run_polling()
+    if not TOKEN:
+        print("Error: BOT_TOKEN variable is missing!")
+    else:
+        app = ApplicationBuilder().token(TOKEN).build()
+        app.add_handler(CommandHandler("start", start))
+        app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_search))
+        print("Bot is starting...")
+        app.run_polling()
