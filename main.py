@@ -15,7 +15,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "📖 আমি Shibir Online Library Bot বলছি।\n\n"
         "বাংলাদেশ ইসলামী ছাত্রশিবিরের যেকোনো বইয়ের নাম লিখে আমাকে মেসেজ দিন, আমি বইটি আপনাকে খুঁজে দেব। 🔍"
     )
-    # মেইন মেনু বাটন
     keyboard = [
         [InlineKeyboardButton("📢 আমাদের লাইব্রেরি চ্যানেল", url=CHANNEL_LINK)],
         [InlineKeyboardButton("👨‍💻 অ্যাডমিন সাপোর্ট (যোগাযোগ)", url=ADMIN_SUPPORT_LINK)]
@@ -29,18 +28,17 @@ async def handle_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("⚠️ দয়া করে বইয়ের সঠিক এবং পূর্ণ নাম লিখুন।")
         return
 
-    # টেলিগ্রাম অ্যাপের ভেতর সরাসরি সার্চ ওপেন করার জন্য লিঙ্ক
+    # এই লিঙ্কটি টেলিগ্রাম অ্যাপকে কমান্ড দেবে সরাসরি ওই চ্যানেলে সার্চ রেজাল্ট ফিল্টার করতে
     encoded_query = urllib.parse.quote(query)
+    # এখানে 'q' প্যারামিটারটি টেলিগ্রামের ইন-অ্যাপ সার্চ ট্রিগার করবে
     search_url = f"https://t.me/shibir_online_library?q={encoded_query}"
     
-    # বাটন মেনু
     keyboard = [
         [InlineKeyboardButton("📚 বইটি এখানে ডাউনলোড করুন", url=search_url)],
         [InlineKeyboardButton("👨‍💻 অ্যাডমিন সাপোর্ট (যোগাযোগ)", url=ADMIN_SUPPORT_LINK)],
         [InlineKeyboardButton("📢 আমাদের লাইব্রেরি চ্যানেল", url=CHANNEL_LINK)]
     ]
     
-    # আপনার দেওয়া নির্দিষ্ট মেসেজ ফরম্যাট (ভেতরের লিঙ্কটি সরিয়ে দেওয়া হয়েছে)
     response_text = (
         f"🔎 '{query}' বই এর জন্য নিচের বাটনে ক্লিক করুন।\n\n"
         "যদি বইটি খুঁজে না পান তাহলে আবার সঠিক নাম লিখে পুনরায় চেষ্টা করুন অথবা অ্যাডমিন এর সাথে যোগাযোগ করুন। 📝"
@@ -58,5 +56,5 @@ if __name__ == "__main__":
         app = ApplicationBuilder().token(TOKEN).build()
         app.add_handler(CommandHandler("start", start))
         app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_search))
-        print("Bot is running perfectly...")
+        print("Bot is running perfectly with Deep Linking...")
         app.run_polling()
