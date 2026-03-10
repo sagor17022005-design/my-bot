@@ -13,10 +13,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     welcome_text = (
         f"আসসালামু আলাইকুম {user.first_name}! 👋\n\n"
         "📖 আমি Shibir Online Library Bot বলছি।\n\n"
-        "বাংলাদেশ ইসলামী ছাত্রশিবিরের যেকোনো বইয়ের নাম লিখে আমাকে মেসেজ দিন, আমি বইটি আপনাকে খুঁজে দেব। 🔍\n\n"
-        f"📢 আমাদের বই এর চ্যানেলে যুক্ত থাকুন: {CHANNEL_LINK}"
+        "বাংলাদেশ ইসলামী ছাত্রশিবিরের যেকোনো বইয়ের নাম লিখে আমাকে মেসেজ দিন, আমি বইটি আপনাকে খুঁজে দেব। 🔍"
     )
-    await update.message.reply_text(welcome_text, disable_web_page_preview=True)
+    # মেইন মেনু বাটন
+    keyboard = [
+        [InlineKeyboardButton("📢 আমাদের লাইব্রেরি চ্যানেল", url=CHANNEL_LINK)],
+        [InlineKeyboardButton("👨‍💻 অ্যাডমিন সাপোর্ট (যোগাযোগ)", url=ADMIN_SUPPORT_LINK)]
+    ]
+    await update.message.reply_text(welcome_text, reply_markup=InlineKeyboardMarkup(keyboard))
 
 async def handle_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.message.text.strip()
@@ -25,28 +29,26 @@ async def handle_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("⚠️ দয়া করে বইয়ের সঠিক এবং পূর্ণ নাম লিখুন।")
         return
 
-    # সরাসরি ইন-চ্যানেল সার্চ ইউআরএল তৈরি
+    # টেলিগ্রাম অ্যাপের ভেতর সরাসরি সার্চ ওপেন করার জন্য লিঙ্ক
     encoded_query = urllib.parse.quote(query)
-    search_url = f"https://t.me/s/shibir_online_library?q={encoded_query}"
+    search_url = f"https://t.me/shibir_online_library?q={encoded_query}"
     
-    # বাটন মেনু সেটআপ (বই লিঙ্ক + অ্যাডমিন + চ্যানেল)
+    # বাটন মেনু
     keyboard = [
         [InlineKeyboardButton("📚 বইটি এখানে ডাউনলোড করুন", url=search_url)],
         [InlineKeyboardButton("👨‍💻 অ্যাডমিন সাপোর্ট (যোগাযোগ)", url=ADMIN_SUPPORT_LINK)],
         [InlineKeyboardButton("📢 আমাদের লাইব্রেরি চ্যানেল", url=CHANNEL_LINK)]
     ]
     
-    # রিপ্লাই মেসেজ
+    # আপনার দেওয়া নির্দিষ্ট মেসেজ ফরম্যাট (ভেতরের লিঙ্কটি সরিয়ে দেওয়া হয়েছে)
     response_text = (
-        f"🔎 '{query}' এর জন্য নিচের বাটনে ক্লিক করুন।\n\n"
-        "❌ বইটি খুঁজে পাওয়া যাচ্ছে না? তবে সঠিক নাম লিখে পুনরায় চেষ্টা করুন অথবা সরাসরি অ্যাডমিনকে জানান। 📝\n\n"
-        f"📢 আমাদের বই এর চ্যানেলে যুক্ত থাকুন: {CHANNEL_LINK}"
+        f"🔎 '{query}' বই এর জন্য নিচের বাটনে ক্লিক করুন।\n\n"
+        "যদি বইটি খুঁজে না পান তাহলে আবার সঠিক নাম লিখে পুনরায় চেষ্টা করুন অথবা অ্যাডমিন এর সাথে যোগাযোগ করুন। 📝"
     )
     
     await update.message.reply_text(
         response_text,
-        reply_markup=InlineKeyboardMarkup(keyboard),
-        disable_web_page_preview=True
+        reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
 if __name__ == "__main__":
